@@ -1,0 +1,102 @@
+/*
+BATCH 10
+VISHNU DUTT PALADUGU  2010A7PS029P
+MOHIT MINHAS 2010A7PS084P
+*/
+
+
+
+
+GRAMMAR RULES									# SEMANTIC RULES FOR ABSTRACT SYNTAX TREE
+
+
+1 program otherFunctions~mainFunction						# pull mainFunction  
+2 mainFunction TK_MAIN~stmts~TK_END						# pull stmts; nop TK_MAIN,TK_END
+3 otherFunctions function~otherFunctions					# pull function
+4 otherFunctions eps								# del otherFunctions
+5 function TK_FUNID~input_par~output_par~TK_SEM~stmts~TK_END			# pull TK_FUNID, del TK_SEM
+6 input_par TK_INPUT~TK_PARAMETER~TK_LIST~TK_SQL~parameter_list~TK_SQR		# del TK_SQL,TK_SQR,TK_INPUT,TK_PARAMETER,pull paarameter_list;nop TK_INPUT;  
+7 output_par TK_OUTPUT~TK_PARAMETER~TK_LIST~TK_SQL~parameter_list~TK_SQR 	# del TK_SQL,TK_SQR,TK_LIST,TK_PARAMETER; pull parameter_list; nop TK_OUTPUT;
+8 output_par eps								# del output_parameter
+9 parameter_list dataType~TK_ID~remaining_list					# pull TK_ID;
+10 dataType primitiveDatatype							# pull primitiveDatatype
+11 dataType constructedDatatype							# pull constructedDatatype 
+12 primitiveDatatype TK_INT 							# pull TK_INT; nop TK_INT;
+13 primitiveDatatype TK_REAL							# pull TK_REAL; nop TK_REAL;
+14 constructedDatatype TK_RECORD~TK_RECORDID					# pull TK_RECORDID; nop TK_RECORD;
+15 remaining_list TK_COMMA~parameter_list 					# pull TK_COMMA
+16 remaining_list eps								# del remaining_list 				
+17 stmts typeDefinitions~declarations~otherStmts~returnStmt			# pull returnStmt    
+18 typeDefinitions typeDefinition~typeDefinitions				# pull typeDefinition
+19 typeDefinitions eps								# del typeDefinitions
+20 typeDefinition TK_RECORD~TK_RECORDID~fieldDefinitions~TK_ENDRECORD~TK_SEM	# pull TK_RECORDID; nop TK_RECORD,TK_ENDRECORD; del TK_SEM;
+21 fieldDefinitions fieldDefinition~fieldDefinition~moreFields			# pull fieldDefinition 
+22 fieldDefinition TK_TYPE~primitiveDatatype~TK_COLON~TK_FIELDID~TK_SEM		# pull TK_FIELDID; del TK_SEM,TK_TYPE; nop TK_COLON; 
+23 moreFields fieldDefinition~moreFields 					# pull fieldDefinition
+24 moreFields eps								# del moreFields
+25 declarations declaration~declarations					# pull declaration
+26 declarations eps								# del declarations
+27 declaration TK_TYPE~dataType~TK_COLON~TK_ID~global_or_not~TK_SEM		# pull TK_ID, del TK_TYPE,TK_SEM; nop TK_COLON;
+28 global_or_not TK_COLON~TK_GLOBAL						# pull TK_GLOBAL;
+29 global_or_not eps								# del global_or_not
+30 otherStmts stmt~otherStmts 							# pull stmt
+31 otherStmts eps								# del otherStmt
+32 stmt assignmentStmt 								# pull assignmentStmt
+33 stmt iterativeStmt								# pull iterativeStmt								
+34 stmt conditionalStmt								# pull conditionalStmt
+35 stmt ioStmt									# pull ioStmt
+36 stmt funCallStmt								# pull funCallStmt
+37 assignmentStmt SingleOrRecId~TK_ASSIGNOP~arithmeticExpression~TK_SEM		# pull TK_ASSIGNOP; del TK_SEM;
+38 singleOrRecId TK_ID~A 							# pull TK_ID;
+39 A TK_DOT~TK_FIELD                                                            # pull TK_DOT, nop TK_FIELD
+40 funCallStmt outputParameters~TK_CALL~TK_FUNID~TK_WITH~TK_PARAMETERS~inputParameters~TK_SEM	# pull up TK_FUNID; del TK_WITH,TK_PARAMETERS,TK_SEM;
+41 outputParameters TK_SQL~idList~TK_SQR~TK_ASSIGNOP 						# pull up TK_ASSIGNOP; del TK_SQR,TK_SQL;					
+42 outputParameters eps										# del outputParameters
+43 inputParameters TK_SQL~idList~TK_SQR								# pull idList; del TK_SQR,TK_SQL;
+44 iterativeStmt TK_WHILE~TK_OP~booleanExpression~TK_CL~stmt~otherStmts~TK_ENDWHILE		# pull TK_WHILE; nop TK_OP,TK_CL,TK_ENDWHILE
+45 conditionalStmt TK_IF~TK_OP~booleanExpression~TK_CL~TK_THEN~stmt~otherStmts~elsePart		# pull TK_IF del TK_THEN; nop TK_OP,TK_CL
+46 elsePart TK_ELSE~stmt~otherStmts~TK_ENDIF 							# pull TK_ELSE ; nop TK_ENDIF
+47 elsePart TK_ENDIF										# pull TK_ENDIF
+48 ioStmt TK_READ~TK_OP~singleOrRecId~TK_CL~TK_SEM 						# pull TK_READ; nop TK_OP,TK_CL, del TK_SEM
+49 ioStmt TK_WRITE~TK_OP~allVar~TK_CL~TK_SEM							# pull TK_WRITE, nop TK_OP,TK_CL, del TK_SEM
+50 allVar var											# pull var
+51 allVar TK_RECORDID~TK_DOT~TK_FIELDID								# pull TK_RECORDID; nop TK_DOT,TK_FIELDID  		
+52 arithmeticExpression term~expPrime								# pull term
+53 expPrime lowPrecedenceOperators~term~expPrime						# pull term 
+54 expPrime eps											# del expPrime
+55 term factor~termPrime									# pull factor 
+56 termPrime highPrecedenceOperator~factor~termPrime						# pull factor
+57 termPrime eps										# del termPrime
+58 factor TK_OP~arithmeticExpression~TK_CL 							# pull arithmeticExpression; nop TK_OP,TK_CL;	
+59 factor all											# pull all			
+60 highPrecedenceOperator TK_MUL								# pull TK_MUL 
+61 highPrecedenceOperator TK_DIV								# pull TK_DIV
+62 lowPrecedenceOperators TK_PLUS 								# pull TK_PLUS			
+63 lowPrecedenceOperators TK_MINUS								# pull TK_MINUS	
+64 all TK_ID 											# pull TK_ID						
+65 all TK_NUM											# pull TK_NUM																							
+66 all TK_RNUM 											# pull TK_RNUM
+67 all TK_RECORDID~temp										# pull TK_RECORDID
+68 temp eps 											# del temp
+69 temp TK_DOT~TK_FIELDID									# pull up TK_FIELDID
+70 booleanExpression TK_OP~booleanExpression~TK_CL~logicalOp~TK_OP~booleanExpression~TK_CL	# pull logicalOp; nop TK_OP,TK_CL;
+71 booleanExpression var~relationalOp~var							# pull relationalOp
+72 booleanExpression TK_NOT~booleanExpression							# pull TK_NOT
+73 var TK_ID 											# pull TK_ID									
+74 var TK_NUM 											# pull TK_NUM
+75 var TK_RNUM											# pull TK_RNUM
+76 logicalOp TK_AND 										# pull TK_AND
+77 logicalOp TK_OR										# pull TK_OR
+78 relationalOp TK_LT										# pull TK_LT 
+79 relationalOp TK_LE 										# pull TK_LE
+80 relationalOp TK_EQ 										# pull TK_EQ
+81 relationalOp TK_GT 										# pull TK_GT	
+82 relationalOp TK_GE 										# pull TK_GE
+83 relationalOp TK_NE										# pull TK_NE
+84 returnStmt TK_RETURN~optionalReturn~TK_SEM							# pull optionalReturn; nop TK_RETURN; del TK_SEM;
+85 optionalReturn TK_SQL~idList~TK_SQR 								# pull idList; del TK_SQL,SQR;
+86 optionalReturn eps										# del optionalreturn
+87 idList TK_ID~more_ids									# pull TK_ID
+88 more_ids TK_COMMA~idList 									# pull TK_COMMA
+89 more_ids eps											# del more_ids		
+90 A eps											# del A
